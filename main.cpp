@@ -156,6 +156,8 @@ static void restore_rgb(const uint8_t* h_rgb_in, const float* h_y, const float* 
 // ------------------------------------------------------------
 
 int main(int argc, char** argv) {
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   std::string input_path = "input.jpg";
   std::string output_path = "output_equalized.jpg";
   if (argc >= 2) input_path = argv[1];
@@ -172,7 +174,6 @@ int main(int argc, char** argv) {
   const int N = width * height;
   fprintf(stdout, "Loaded %s (%d x %d), N=%d\n", input_path.c_str(), width, height, N);
 
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   // Allocate host memory
   std::vector<float> h_y(N);
   std::vector<float> h_y_new(N);
@@ -204,8 +205,6 @@ int main(int argc, char** argv) {
   // 7) restore RGB and write output
   restore_rgb(h_img, h_y.data(), h_y_new.data(), h_out.data(), width, height);
   
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
   // Save output JPG
   if (!stbi_write_jpg(output_path.c_str(), width, height, 3, h_out.data(), 95)) {
     fprintf(stderr, "Failed to write output image: %s\n", output_path.c_str());
@@ -215,6 +214,8 @@ int main(int argc, char** argv) {
 
   // Cleanup
   stbi_image_free(h_img);
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
 
   return 0;
 }
